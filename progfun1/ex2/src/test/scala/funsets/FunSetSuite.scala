@@ -110,5 +110,11 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("map") {
+    val or : Set = List(1, 3, 4, 5, 7, 1000).contains
+    val map = FunSets.map(or, _ - 1)
+    FunSets.toString(map) === "{0,2,3,4,6,999}"
+  }
+
 
 }
