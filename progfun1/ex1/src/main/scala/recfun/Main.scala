@@ -43,6 +43,6 @@ object Main {
     case _ if money == 0 => 1
     case _ if money < 0 => 0
     case Nil => 0
-    case c :: left => countChange(money - c, left) + countChange(money, left)
+    case c :: left => countChange(money - c, coins) + countChange(money, left)
   }
 }
