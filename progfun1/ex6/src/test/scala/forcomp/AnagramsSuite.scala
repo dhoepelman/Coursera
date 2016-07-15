@@ -1,11 +1,11 @@
 package forcomp
 
 import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
 import Anagrams._
+
+import scala.collection.immutable.SortedSet
 
 @RunWith(classOf[JUnitRunner])
 class AnagramsSuite extends FunSuite  {
@@ -64,7 +64,23 @@ class AnagramsSuite extends FunSuite  {
       List(('a', 1), ('b', 2)),
       List(('a', 2), ('b', 2))
     )
-    assert(combinations(abba).toSet === abbacomb.toSet)
+    implicit val theordering = new Ordering[List[(Char,Int)]] {
+      override def compare(x: List[(Char, Int)], y: List[(Char, Int)]): Int = {
+        val c = x.length - y.length
+        if(c == 0) {
+          val o = implicitly[Ordering[(Char,Int)]]
+//          y.headOption.map(_._1).getOrElse(' ') - x.headOption.map(_._1).getOrElse(' ')
+          x.zip(y).foldLeft(0)((acc,next) => if(acc == 0) o.compare(next._2,next._1) else acc)
+        } else {
+          c
+        }
+      }
+    }
+    val combs = combinations(abba)
+    val a = SortedSet(combs : _*)
+    val b = SortedSet(abbacomb : _*)
+    assert(a === b)
+    //assert(combs.toSet === abbacomb.toSet)
   }
 
 
@@ -98,6 +114,30 @@ class AnagramsSuite extends FunSuite  {
       List("Linux", "rulez")
     )
     assert(sentenceAnagrams(sentence).toSet === anas.toSet)
+  }
+
+  test("given") {
+    val sentence = List("Yes", "men")
+    val anas = List(
+            List("en","as","my"),
+            List("en","my","as"),
+            List("man","yes"),
+            List("men","say"),
+            List("as","en","my"),
+            List("as","my","en"),
+            List("sane","my"),
+            List("Sean","my"),
+            List("my","en","as"),
+            List("my","as","en"),
+            List("my","sane"),
+            List("my","Sean"),
+            List("say","men"),
+            List("yes","man")
+            )
+    val calc = sentenceAnagrams(sentence)
+    val calcs = calc.toSet
+    assert(calc.length === calcs.size)
+    assert(calcs === anas.toSet)
   }
 
 }
