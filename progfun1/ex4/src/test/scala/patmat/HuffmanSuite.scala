@@ -70,4 +70,14 @@ class HuffmanSuite extends FunSuite {
     encode(frenchCode)(code) === good
   }
 
+  test("optimal1") {
+    val string = "aaaaabbc".toList
+    val reverse = string.reverse
+    val codetree = createCodeTree(string)
+    val codetreereverse = createCodeTree(reverse)
+    codetree === codetreereverse
+    val encoded = encode(codetree)(string)
+    encoded === List(0,0,0,0,0,10,10,11)
+  }
+
 }
