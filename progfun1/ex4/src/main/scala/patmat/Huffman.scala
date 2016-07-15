@@ -192,10 +192,9 @@ object Huffman {
    * into a sequence of bits.
    */
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
-    @tailrec
-    def find(branch: CodeTree, c: Char, acc : List[Bit] = Nil) : List[Bit] = branch match {
-      case Leaf(`c`, _) => acc
-      case Fork(left, right, _, _) => if(chars(left) contains c) find(left, c, 0 :: acc) else find(right, c, 1 :: acc)
+    def find(branch: CodeTree, c: Char) : List[Bit] = branch match {
+      case Leaf(`c`, _) => Nil
+      case Fork(left, right, _, _) => if(chars(left) contains c) 0 :: find(left, c) else 1 :: find(right, c)
     }
     // TODO: reverse bits?
     text.flatMap(c => find(tree, c))
