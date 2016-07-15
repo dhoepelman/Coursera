@@ -1,5 +1,7 @@
 package forcomp
 
+import scala.collection.immutable.{SortedMap, TreeMap}
+
 
 object Anagrams {
 
@@ -35,10 +37,10 @@ object Anagrams {
    *
    *  Note: you must use `groupBy` to implement this method!
    */
-  def wordOccurrences(w: Word): Occurrences = w.toList.map(_.toLower).groupBy(identity).mapValues(_.length).toList.sortBy(_._1)
+  def wordOccurrences(w: Word): Occurrences = w.toLowerCase.groupBy(identity).mapValues(_.length).toList.sortBy(_._1)
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = s.flatMap(wordOccurrences).groupBy(_._1).mapValues(_.map(_._2).sum).toList.sortBy(_._1)
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.mkString)
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
@@ -107,10 +109,10 @@ object Anagrams {
    *  and has no zero-entries.
    */
   def subtract(x: Occurrences, y: Occurrences): Occurrences = {
-    y.foldLeft(x.toMap)((acc,subtract) => {
-      val newfreq = acc(subtract._1) - subtract._2
-      if(newfreq <= 0) acc - subtract._1 else acc.updated(subtract._1,newfreq)
-    }).toList
+    y.foldLeft(SortedMap(x : _*))({case (acc,(char,freq)) => {
+      val newfreq = acc(char) - freq
+      if (newfreq <= 0) acc - char else acc.updated(char, newfreq)
+    }}).toList
   }
 
   /** Returns a list of all anagram sentences of the given sentence.
@@ -154,19 +156,18 @@ object Anagrams {
    *  Note: There is only one anagram of an empty sentence.
    */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    def ofOccurences(occur : Occurrences) : List[Sentence] = {
-      for {
-        comb <- combinations(occur)
-        wordsOpt = {
-          val x = dictionaryByOccurrences.get(comb)
-          //println(s"$comb -> $x")
-          x
-        }
-        if wordsOpt.isDefined
-        words = wordsOpt.get
-        rest <- ofOccurences(subtract(occur, comb))
-      } yield words ++ rest
+    def ofOccurrences(occur : Occurrences) : List[Sentence] = {
+      if(occur.isEmpty)
+        List(Nil)
+      else {
+        for {
+          comb <- combinations(occur)
+          if comb.nonEmpty
+          word <- dictionaryByOccurrences.getOrElse(comb, Nil)
+          rest <- ofOccurrences(subtract(occur, comb))
+        } yield word :: rest
+      }
     }
-    ofOccurences(sentenceOccurrences(sentence))
+    ofOccurrences(sentenceOccurrences(sentence))
   }
 }
