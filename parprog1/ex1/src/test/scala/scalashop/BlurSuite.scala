@@ -9,6 +9,11 @@ import common._
 
 @RunWith(classOf[JUnitRunner])
 class BlurSuite extends FunSuite {
+
+  def decomp(rGBA: RGBA): String = {
+    s"${red(rGBA)}, ${green(rGBA)}, ${blue(rGBA)}, ${alpha(rGBA)}}"
+  }
+
   test("boxBlurKernel should correctly handle radius 0") {
     val src = new Img(5, 5)
 
@@ -28,9 +33,10 @@ class BlurSuite extends FunSuite {
     src(0, 2) = 6; src(1, 2) = 7; src(2, 2) = 8
     src(0, 3) = 50; src(1, 3) = 11; src(2, 3) = 16
 
-    assert(boxBlurKernel(src, 1, 2, 1) === 12,
+    val r = boxBlurKernel(src, 1, 2, 1)
+    assert(r === 12,
       s"(boxBlurKernel(1, 2, 1) should be 12, " +
-        s"but it's ${boxBlurKernel(src, 1, 2, 1)})")
+        s"but it's $r == ${decomp(r)})")
   }
 
   test("HorizontalBoxBlur.blur with radius 1 should correctly blur the entire 3x3 image") {
