@@ -65,18 +65,16 @@ object VerticalBoxBlur {
    *  columns.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-    val loads = src.width.toDouble / numTasks
-    var tnum = 0
-    var end = 0
-    val ts = for {
-      numt <- Range(0, src.width).by()
-      t = task {
-        blur(src,dst, math.round(numt*loads).toInt, Math.round((numt+1) * loads).toInt,radius)
-      }
-    } yield t
+    val loadsize = src.width.toDouble / numTasks
+    val range = Range(0, src.width, math.ceil(loadsize).toInt).toList
+    val range2 = range.tail ++ List(src.width)
+    val ranges = range.zip(range2)
+    //println(range)
+    //println(range2)
+    //println(ranges)
+    val tasks = ranges.map({case (start,end) => task { blur(src,dst, start, end,radius) }})
 
-    // TODO implement using the `task` construct and the `blur` method
-    ???
+    tasks.foreach(_.join)
   }
 
 }
