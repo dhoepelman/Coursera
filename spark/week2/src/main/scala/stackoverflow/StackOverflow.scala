@@ -38,7 +38,7 @@ object StackOverflow extends StackOverflow {
   /** Main function */
   def main(args: Array[String]): Unit = {
 
-    val means   = kmeans(sampleVectors(vectors), vectors, debug = true)
+    val means   = kmeans(sampleVectors(vectors), vectors, debug = false)
     val results = clusterResults(means, vectors)
     printResults(results)
   }
@@ -195,12 +195,14 @@ class StackOverflow extends Serializable {
 
   /** Main kmeans computation */
   @tailrec final def kmeans(means: Array[(ClusteringValue, Score)], vectors: RDD[(ClusteringValue, Score)], iter: Int = 1, debug: Boolean = false): Array[(ClusteringValue, Score)] = {
-    
+
+    val newMeans = means.clone()
+
     val withClosests = vectors.map(v => (findClosest(v, means), v))
 
-    val newMeans: Array[(Int, Int)] = withClosests.groupByKey().map({
-      case (_, vs) => averageVectors(vs)
-    }).collect()
+    withClosests.groupByKey().mapValues(averageVectors).collect().foreach {
+      case (key, average) => newMeans.update(key, average)
+    }
 
     val distance = euclideanDistance(means, newMeans)
 
@@ -310,7 +312,7 @@ class StackOverflow extends Serializable {
       val size = vs.size
 
       val langLabel: String   = langs(mostCommon/langSpread) // most common language in the cluster
-      val langPercent: Double = vs.count(_._1 == mostCommon).toDouble / size // percent of the questions in the most common language
+      val langPercent: Double = vs.count(_._1 == mostCommon).toDouble / size * 100 // percent of the questions in the most common language
       val clusterSize: Int    = size
       val medianScore: Int    = vs.drop(size/2).head._2
 
