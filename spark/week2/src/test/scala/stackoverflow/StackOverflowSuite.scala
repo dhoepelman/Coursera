@@ -34,5 +34,37 @@ class StackOverflowSuite extends FunSuite with BeforeAndAfterAll {
     assert(instantiatable, "Can't instantiate a StackOverflow object")
   }
 
+  test("Scored") {
+
+    val xs =
+      """((1,6,None,None,140,Some(CSS)),67)
+        |((1,42,None,None,155,Some(PHP)),89)
+        |((1,72,None,None,16,Some(Ruby)),3)
+        |((1,126,None,None,33,Some(Java)),30)
+        |((1,174,None,None,38,Some(C#)),20)""".stripMargin.split("\n").toSet
+
+    val matching = stackoverflow.StackOverflow.scored.map(_.toString.replace("Posting", "")).filter(xs.contains).collect().toSet
+
+    println(matching)
+
+    assert(xs == matching, "Different entries")
+    assert(stackoverflow.StackOverflow.scored.count() == 2121822, "Scored count")
+  }
+
+  test("Vectors") {
+    val xs =
+      """(350000,67)
+        |(100000,89)
+        |(300000,3)
+        |(50000,30)
+        |(200000,20)""".stripMargin.split("\n").toSet
+
+    val matching = stackoverflow.StackOverflow.vectors.map(_.toString).filter(xs.contains).collect().toSet
+
+    println(matching)
+
+    assert(xs == matching, "Different entries")
+  }
+
 
 }
