@@ -27,11 +27,11 @@ object StackOverflow extends StackOverflow {
   @transient lazy val conf: SparkConf = new SparkConf().setMaster("local[*]").setAppName("StackOverflow")
   @transient lazy val sc: SparkContext = new SparkContext(conf)
 
-  lazy val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
-  lazy val raw     = rawPostings(lines)
-  lazy val grouped = groupedPostings(raw)
-  lazy val scored : RDD[(Posting, Score)]  = scoredPostings(grouped)
-  lazy val vectors: RDD[(ClusteringValue, Score)] = vectorPostings(scored).cache()
+  val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
+  val raw     = rawPostings(lines)
+  val grouped = groupedPostings(raw)
+  val scored : RDD[(Posting, Score)]  = scoredPostings(grouped)
+  val vectors: RDD[(ClusteringValue, Score)] = vectorPostings(scored)
 
   type Means = RDD[(ClusteringValue, Score)]
 
@@ -140,7 +140,7 @@ class StackOverflow extends Serializable {
 
     scored.flatMap({
       case (p, score) => firstLangInTag(p.tags, langs).map(x => (x * langSpread, score))
-    })
+    }).cache()
   }
 
 
